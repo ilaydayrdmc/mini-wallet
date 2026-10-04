@@ -25,9 +25,9 @@ Spring Boot ile yazılmış katmanlı bir REST API (JWT ile korumalı), React ar
 | Backend | Java 17, Spring Boot 4, Spring Web, Spring Data JPA (Hibernate), Spring Security (OAuth2 Resource Server, JWT), Bean Validation |
 | Veritabanı | PostgreSQL 16, Flyway (migration) |
 | Frontend | React 19, Vite |
-| Test | JUnit 5, Mockito, AssertJ, Spring Security Test, Testcontainers |
+| Test | JUnit 5, Mockito, AssertJ, Spring Security Test, Testcontainers, Playwright (uçtan uca) |
 | Altyapı | Docker, Docker Compose (Nginx ile frontend), Maven Wrapper |
-| CI | GitHub Actions (backend testleri + frontend lint/build) |
+| CI | GitHub Actions (backend testleri, frontend lint/build, gerçek tarayıcıda uçtan uca testler) |
 
 ## Hızlı başlangıç
 
@@ -99,7 +99,24 @@ Testler çalışırken **Docker çalışıyor olmalıdır**: entegrasyon testler
 
 Güvenlik ve kilit testlerinin gerçekten koruma sağladığı, ilgili kod geçici olarak bozularak denenmiştir: satır kilidi (`FOR UPDATE`), sahiplik koşulu ve `anyRequest().authenticated()` kuralı kaldırıldığında ilgili testler kırılır.
 
-Frontend için: `cd frontend && npm run lint && npm run build`.
+### Arayüz testleri (uçtan uca)
+
+[Playwright](https://playwright.dev/) testleri, ayakta olan gerçek uygulamaya (nginx → Spring Boot → PostgreSQL) karşı gerçek bir tarayıcıda çalışır. Önce uygulamayı başlat:
+
+```bash
+docker compose up -d --build
+
+cd frontend
+npm install
+npx playwright install chromium      # yerelde kurulu Chrome varsa gerekmez
+npm run test:e2e
+```
+
+Kapsam (`frontend/e2e/wallet.spec.js`): kayıt, giriş, çıkış, oturumun sayfa yenilemede sürmesi, yanlış şifre, çift kayıt, geçersiz/süresi dolmuş token, hesap açma, yatırma, çekme, yetersiz bakiye, başka bir kullanıcının hesabına numarayla transfer, olmayan hesaba transfer, kullanıcıların birbirinin hesabını görmemesi ve dar (375px) ekranda yatay taşma olmaması.
+
+Yerelde sistemdeki Chrome kullanılır, CI'da Playwright'in Chromium'u indirilir. Arayüz kodunda geçici bozmalar yapılarak (giriş isteğinden token'ı ayırma kuralının kaldırılması, `401` yakalamanın kapatılması) testlerin gerçekten kırıldığı doğrulanmıştır.
+
+Lint ve derleme kontrolü: `cd frontend && npm run lint && npm run build`.
 
 ## API
 
@@ -202,4 +219,4 @@ mini-wallet/
 - Transferde alıcı hesap, sahibi kim olursa olsun kilitlenir. Kötü niyetli bir kullanıcı başkasının hesabını kısa süre meşgul edebilir.
 - `ownerName` alanı hesabın serbest metin adıdır, kullanıcı adına bağlı değildir.
 - Para birimi yalnızca arayüzde ₺ olarak gösterilir, backend para birimi tutmaz.
-- Arayüz için otomatik test yoktur (yalnızca lint ve build CI'da çalışır). Arayüz akışları gerçek bir tarayıcıda elle/betikle denenmiştir.
+- Arayüz bileşenleri için birim testi yoktur; arayüz yalnızca uçtan uca (Playwright) testlerle doğrulanır.
