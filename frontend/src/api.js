@@ -38,3 +38,10 @@ export function withdraw(accountId, amount) {
     body: JSON.stringify({ amount }),
   })
 }
+
+export function transfer(fromAccountId, toAccountId, amount) {
+  return request('/api/transfers', {
+    method: 'POST',
+    body: JSON.stringify({ fromAccountId, toAccountId, amount }),
+  })
+}

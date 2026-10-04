@@ -1,16 +1,17 @@
 import { useState } from 'react'
 import { deposit, withdraw } from '../api'
+import { parseAmount } from '../amount'
+import TransferForm from './TransferForm'
 
 const money = new Intl.NumberFormat('tr-TR', { style: 'currency', currency: 'TRY' })
 
-function AccountPanel({ account, onChanged }) {
+function AccountPanel({ account, accounts, onChanged }) {
   const [amount, setAmount] = useState('')
   const [error, setError] = useState(null)
   const [submitting, setSubmitting] = useState(false)
 
-  // "12,50" yazilirsa da calissin
-  const parsed = Number(amount.replace(',', '.'))
-  const valid = amount.trim() !== '' && Number.isFinite(parsed) && parsed >= 0.01
+  const parsed = parseAmount(amount)
+  const valid = parsed !== null
 
   async function run(action) {
     setError(null)
@@ -51,6 +52,8 @@ function AccountPanel({ account, onChanged }) {
         </button>
       </div>
       {error && <p className="error">{error}</p>}
+      <hr />
+      <TransferForm key={account.id} account={account} accounts={accounts} onChanged={onChanged} />
     </section>
   )
 }

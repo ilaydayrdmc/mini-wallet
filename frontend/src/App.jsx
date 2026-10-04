@@ -37,7 +37,7 @@ function App() {
     <main className="container">
       <h1>Mini Wallet</h1>
       <CreateAccountForm onCreated={reload} />
-      {selected && <AccountPanel key={selected.id} account={selected} onChanged={reload} />}
+      {selected && <AccountPanel key={selected.id} account={selected} accounts={accounts} onChanged={reload} />}
       <section className="card">
         <h2>Hesaplar</h2>
         {loading && <p className="muted">Yukleniyor...</p>}

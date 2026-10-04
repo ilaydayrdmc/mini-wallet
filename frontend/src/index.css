@@ -95,3 +95,23 @@ tr.selected {
 button.secondary {
   background: #868e96;
 }
+
+select {
+  flex: 1;
+  padding: 0.5rem 0.75rem;
+  border: 1px solid #c8ccd6;
+  border-radius: 6px;
+  font-size: 1rem;
+  background: #fff;
+}
+
+h3 {
+  margin: 0 0 0.5rem;
+  font-size: 1rem;
+}
+
+hr {
+  border: 0;
+  border-top: 1px solid #eceef3;
+  margin: 1rem 0;
+}
