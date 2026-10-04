@@ -1,11 +1,12 @@
 import { useState } from 'react'
 import { deposit, withdraw } from '../api'
 import { parseAmount } from '../amount'
+import TransactionHistory from './TransactionHistory'
 import TransferForm from './TransferForm'
 
 const money = new Intl.NumberFormat('tr-TR', { style: 'currency', currency: 'TRY' })
 
-function AccountPanel({ account, accounts, onChanged }) {
+function AccountPanel({ account, accounts, reloadKey, onChanged }) {
   const [amount, setAmount] = useState('')
   const [error, setError] = useState(null)
   const [submitting, setSubmitting] = useState(false)
@@ -54,6 +55,8 @@ function AccountPanel({ account, accounts, onChanged }) {
       {error && <p className="error">{error}</p>}
       <hr />
       <TransferForm key={account.id} account={account} accounts={accounts} onChanged={onChanged} />
+      <hr />
+      <TransactionHistory key={reloadKey} accountId={account.id} />
     </section>
   )
 }

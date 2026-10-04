@@ -115,3 +115,26 @@ hr {
   border-top: 1px solid #eceef3;
   margin: 1rem 0;
 }
+
+tbody tr.static {
+  cursor: default;
+}
+
+tbody tr.static:hover {
+  background: none;
+}
+
+.in {
+  color: #2b8a3e;
+}
+
+.out {
+  color: #c92a2a;
+}
+
+.pager {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-top: 0.75rem;
+}

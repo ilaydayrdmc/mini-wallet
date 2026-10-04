@@ -45,3 +45,7 @@ export function transfer(fromAccountId, toAccountId, amount) {
     body: JSON.stringify({ fromAccountId, toAccountId, amount }),
   })
 }
+
+export function getTransactions(accountId, page = 0, size = 5) {
+  return request(`/api/accounts/${accountId}/transactions?page=${page}&size=${size}`)
+}
