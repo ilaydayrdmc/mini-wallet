@@ -24,7 +24,7 @@ Ekran görüntüsü eklemek için: görüntüyü docs/screenshot.png olarak kayd
 | Katman | Teknoloji |
 |---|---|
 | Backend | Java 17, Spring Boot 4, Spring Web, Spring Data JPA (Hibernate), Bean Validation |
-| Veritabanı | PostgreSQL 16 |
+| Veritabanı | PostgreSQL 16, Flyway (migration) |
 | Frontend | React 19, Vite |
 | Test | JUnit 5, Mockito, AssertJ |
 | Altyapı | Docker, Docker Compose (Nginx ile frontend), Maven Wrapper |
@@ -141,12 +141,12 @@ mini-wallet/
 - **Tek transaction:** Yatırma, çekme ve transfer `@Transactional` içindedir. Bakiye güncellemesi ve işlem kaydı birlikte kaydedilir ya da hiç kaydedilmez.
 - **Pessimistic locking:** Bakiye değiştiren işlemler hesabı `SELECT ... FOR UPDATE` ile kilitler. Aynı hesaba eşzamanlı işlemler sırayla yapılır, güncellemeler birbirini ezmez.
 - **Deadlock önleme:** Transferde iki hesap her zaman küçük id'den büyüğe doğru kilitlenir. Karşılıklı transferler (A→B ve B→A) birbirini beklemez. Bu davranış birim testle korunur.
+- **Şema Flyway ile yönetilir** (`backend/src/main/resources/db/migration`). Hibernate yalnızca `validate` modunda çalışır, tabloları kendisi oluşturmaz veya değiştirmez. İşlem geçmişi sorgusu için bileşik bir indeks tanımlıdır.
 - **İşlem geçmişi** her kayıtta `balanceAfter` saklar, böylece geçmiş görüntülenirken bakiye yeniden hesaplanmaz.
 
 ## Bilinen sınırlar
 
 - **Kimlik doğrulama yok.** Herkes her hesapta işlem yapabilir.
-- **Şema `ddl-auto=update` ile yönetiliyor.** Gerçek bir uygulamada Flyway/Liquibase gibi bir migration aracı kullanılmalıdır.
 - Veritabanı şifreleri yerel geliştirme içindir (`wallet/wallet`), `docker-compose.yml` içinde açıkça yazılıdır.
 - Para birimi yalnızca arayüzde ₺ olarak gösterilir, backend para birimi tutmaz.
 - Eşzamanlılık davranışı elle denenmiştir, gerçek veritabanıyla otomatik entegrasyon testi (ör. Testcontainers) yoktur.
