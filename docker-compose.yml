@@ -24,6 +24,8 @@ services:
       SPRING_DATASOURCE_URL: jdbc:postgresql://db:5432/wallet
       SPRING_DATASOURCE_USERNAME: wallet
       SPRING_DATASOURCE_PASSWORD: wallet
+      # Gercek ortamda: JWT_SECRET=<en az 32 karakterlik rastgele deger> docker compose up
+      JWT_SECRET: ${JWT_SECRET:-dev-only-secret-change-me-in-production-0123456789}
     ports:
       - "8080:8080"
     depends_on:

@@ -18,8 +18,11 @@ import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.ResultActions;
 
+import com.miniwallet.wallet.dto.LoginRequest;
 import com.miniwallet.wallet.dto.RegisterRequest;
+import com.miniwallet.wallet.dto.TokenResponse;
 import com.miniwallet.wallet.dto.UserResponse;
+import com.miniwallet.wallet.exception.InvalidCredentialsException;
 import com.miniwallet.wallet.exception.UsernameTakenException;
 import com.miniwallet.wallet.service.AuthService;
 
@@ -62,6 +65,43 @@ class AuthControllerTest {
                 "{\"username\":\"ayse\",\"password\":\"" + "x".repeat(73) + "\"}");
         for (String body : bodies) {
             register(body).andExpect(status().isBadRequest());
+        }
+        verifyNoInteractions(authService);
+    }
+
+    private ResultActions login(String body) throws Exception {
+        return mockMvc.perform(post("/api/auth/login")
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(body));
+    }
+
+    @Test
+    void login_returns200WithToken() throws Exception {
+        when(authService.login(any(LoginRequest.class)))
+                .thenReturn(new TokenResponse("jwt-degeri", "Bearer", 3600));
+
+        login("{\"username\":\"ayse\",\"password\":\"gizli-sifre-123\"}")
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.accessToken").value("jwt-degeri"))
+                .andExpect(jsonPath("$.tokenType").value("Bearer"))
+                .andExpect(jsonPath("$.expiresIn").value(3600));
+    }
+
+    @Test
+    void login_badCredentials_returns401() throws Exception {
+        when(authService.login(any(LoginRequest.class))).thenThrow(new InvalidCredentialsException());
+
+        login("{\"username\":\"ayse\",\"password\":\"yanlis\"}")
+                .andExpect(status().isUnauthorized())
+                .andExpect(jsonPath("$.status").value(401))
+                .andExpect(jsonPath("$.detail").value("Kullanici adi veya sifre hatali"));
+    }
+
+    @Test
+    void login_missingFields_return400() throws Exception {
+        for (String body : List.of("{}", "{\"username\":\"ayse\"}", "{\"password\":\"x\"}",
+                "{\"username\":\"\",\"password\":\"x\"}")) {
+            login(body).andExpect(status().isBadRequest());
         }
         verifyNoInteractions(authService);
     }
