@@ -26,7 +26,7 @@ Ekran görüntüsü eklemek için: görüntüyü docs/screenshot.png olarak kayd
 | Backend | Java 17, Spring Boot 4, Spring Web, Spring Data JPA (Hibernate), Bean Validation |
 | Veritabanı | PostgreSQL 16, Flyway (migration) |
 | Frontend | React 19, Vite |
-| Test | JUnit 5, Mockito, AssertJ |
+| Test | JUnit 5, Mockito, AssertJ, Testcontainers |
 | Altyapı | Docker, Docker Compose (Nginx ile frontend), Maven Wrapper |
 | CI | GitHub Actions (backend testleri + frontend lint/build) |
 
@@ -75,8 +75,11 @@ cd backend
 ./mvnw test          # Windows: .\mvnw.cmd test
 ```
 
+Testler çalışırken **Docker çalışıyor olmalıdır**: entegrasyon testleri [Testcontainers](https://testcontainers.com/) ile geçici bir PostgreSQL container'ı başlatır, ayrıca veritabanı kurmak gerekmez.
+
 - `AccountServiceTest` ve `TransferServiceTest`: Mockito ile servis katmanı birim testleri (yatırma, çekme, transfer, yetersiz bakiye, olmayan hesap, kilit sırası).
-- `WalletApplicationTests`: uygulama bağlamının yüklendiğini doğrular. **Çalışan bir PostgreSQL gerektirir** (`docker compose up -d db`). CI'da bir Postgres servisi kullanılır.
+- `ConcurrencyIntegrationTest`: gerçek PostgreSQL üzerinde eşzamanlılık testleri. Aynı hesaba eşzamanlı yatırmada güncelleme kaybolmaz, eşzamanlı çekmeler bakiyeyi eksiye düşüremez, karşılıklı transferler (A→B ve B→A) deadlock yapmaz ve toplam para korunur. Satır kilidi (`FOR UPDATE`) kaldırıldığında bu üç test kırılır.
+- `WalletApplicationTests`: uygulama bağlamının yüklendiğini doğrular. Flyway migration'ları boş bir veritabanına uygulanır ve Hibernate şema doğrulaması geçer.
 
 Frontend için: `cd frontend && npm run lint && npm run build`.
 
@@ -149,4 +152,3 @@ mini-wallet/
 - **Kimlik doğrulama yok.** Herkes her hesapta işlem yapabilir.
 - Veritabanı şifreleri yerel geliştirme içindir (`wallet/wallet`), `docker-compose.yml` içinde açıkça yazılıdır.
 - Para birimi yalnızca arayüzde ₺ olarak gösterilir, backend para birimi tutmaz.
-- Eşzamanlılık davranışı elle denenmiştir, gerçek veritabanıyla otomatik entegrasyon testi (ör. Testcontainers) yoktur.
