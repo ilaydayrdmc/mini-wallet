@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react'
 import { getAccounts } from './api'
 import AccountList from './components/AccountList'
+import AccountPanel from './components/AccountPanel'
 import CreateAccountForm from './components/CreateAccountForm'
 
 function App() {
@@ -9,6 +10,9 @@ function App() {
   const [error, setError] = useState(null)
   // Bu sayac artinca liste yeniden yuklenir (ornegin hesap acildiktan sonra)
   const [reloadKey, setReloadKey] = useState(0)
+  const [selectedId, setSelectedId] = useState(null)
+  const reload = () => setReloadKey((k) => k + 1)
+  const selected = accounts.find((a) => a.id === selectedId)
 
   useEffect(() => {
     let cancelled = false
@@ -32,12 +36,13 @@ function App() {
   return (
     <main className="container">
       <h1>Mini Wallet</h1>
-      <CreateAccountForm onCreated={() => setReloadKey((k) => k + 1)} />
+      <CreateAccountForm onCreated={reload} />
+      {selected && <AccountPanel key={selected.id} account={selected} onChanged={reload} />}
       <section className="card">
         <h2>Hesaplar</h2>
         {loading && <p className="muted">Yukleniyor...</p>}
         {error && <p className="error">{error}</p>}
-        {!loading && !error && <AccountList accounts={accounts} />}
+        {!loading && !error && <AccountList accounts={accounts} selectedId={selectedId} onSelect={setSelectedId} />}
       </section>
     </main>
   )

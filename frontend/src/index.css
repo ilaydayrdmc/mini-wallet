@@ -76,3 +76,22 @@ td {
   color: #c92a2a;
   margin: 0.5rem 0 0;
 }
+
+tbody tr {
+  cursor: pointer;
+}
+
+tbody tr:hover,
+tr.selected {
+  background: #eef1ff;
+}
+
+.balance {
+  font-size: 1.75rem;
+  font-weight: 600;
+  margin: 0 0 0.75rem;
+}
+
+button.secondary {
+  background: #868e96;
+}

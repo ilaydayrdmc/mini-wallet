@@ -24,3 +24,17 @@ export function createAccount(ownerName) {
     body: JSON.stringify({ ownerName }),
   })
 }
+
+export function deposit(accountId, amount) {
+  return request(`/api/accounts/${accountId}/deposit`, {
+    method: 'POST',
+    body: JSON.stringify({ amount }),
+  })
+}
+
+export function withdraw(accountId, amount) {
+  return request(`/api/accounts/${accountId}/withdraw`, {
+    method: 'POST',
+    body: JSON.stringify({ amount }),
+  })
+}

@@ -1,6 +1,6 @@
 const money = new Intl.NumberFormat('tr-TR', { style: 'currency', currency: 'TRY' })
 
-function AccountList({ accounts }) {
+function AccountList({ accounts, selectedId, onSelect }) {
   if (accounts.length === 0) {
     return <p className="muted">Henuz hesap yok. Yukaridan bir tane ac.</p>
   }
@@ -16,7 +16,11 @@ function AccountList({ accounts }) {
       </thead>
       <tbody>
         {accounts.map((a) => (
-          <tr key={a.id}>
+          <tr
+            key={a.id}
+            className={a.id === selectedId ? 'selected' : ''}
+            onClick={() => onSelect(a.id)}
+          >
             <td>{a.id}</td>
             <td>{a.ownerName}</td>
             <td className="num">{money.format(a.balance)}</td>
