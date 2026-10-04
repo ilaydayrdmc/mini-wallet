@@ -2,6 +2,9 @@ package com.miniwallet.wallet.service;
 
 import java.util.List;
 
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Sort;
+import org.springframework.data.web.PagedModel;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -48,6 +51,19 @@ public class AccountService {
         Transaction tx = transactionRepository.save(new Transaction(
                 account, TransactionType.DEPOSIT, request.amount(), account.getBalance()));
         return TransactionResponse.from(tx);
+    }
+
+    @Transactional(readOnly = true)
+    public PagedModel<TransactionResponse> getTransactions(Long accountId, int page, int size) {
+        if (!accountRepository.existsById(accountId)) {
+            throw new AccountNotFoundException(accountId);
+        }
+        // En yeni islem en uste; ayni ana denk gelenlerde id ile sirala
+        PageRequest pageable = PageRequest.of(page, size,
+                Sort.by(Sort.Direction.DESC, "createdAt", "id"));
+        return new PagedModel<>(
+                transactionRepository.findByAccountId(accountId, pageable)
+                        .map(TransactionResponse::from));
     }
 
     @Transactional
