@@ -12,6 +12,7 @@ import java.util.concurrent.Executors;
 import java.util.concurrent.Future;
 import java.util.concurrent.TimeUnit;
 
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
@@ -22,9 +23,11 @@ import com.miniwallet.wallet.dto.AccountResponse;
 import com.miniwallet.wallet.dto.AmountRequest;
 import com.miniwallet.wallet.dto.CreateAccountRequest;
 import com.miniwallet.wallet.dto.TransferRequest;
+import com.miniwallet.wallet.entity.User;
 import com.miniwallet.wallet.exception.InsufficientFundsException;
 import com.miniwallet.wallet.repository.AccountRepository;
 import com.miniwallet.wallet.repository.TransactionRepository;
+import com.miniwallet.wallet.repository.UserRepository;
 import com.miniwallet.wallet.service.AccountService;
 import com.miniwallet.wallet.service.TransferService;
 
@@ -51,10 +54,21 @@ class ConcurrencyIntegrationTest {
     @Autowired
     private TransactionRepository transactionRepository;
 
+    @Autowired
+    private UserRepository userRepository;
+
+    // Testteki tum hesaplar bu kullaniciya ait (hesaplarin gercek bir kullanici satiri olmasi gerekir)
+    private Long userId;
+
+    @BeforeEach
+    void createUser() {
+        userId = userRepository.save(new User("es.zamanli." + System.nanoTime(), "hash")).getId();
+    }
+
     private AccountResponse newAccount(String name, String initialBalance) {
-        AccountResponse account = accountService.create(new CreateAccountRequest(name));
+        AccountResponse account = accountService.create(userId, new CreateAccountRequest(name));
         if (new BigDecimal(initialBalance).signum() > 0) {
-            accountService.deposit(account.id(), new AmountRequest(new BigDecimal(initialBalance)));
+            accountService.deposit(userId, account.id(), new AmountRequest(new BigDecimal(initialBalance)));
         }
         return account;
     }
@@ -93,7 +107,7 @@ class ConcurrencyIntegrationTest {
 
         List<Callable<Object>> tasks = new ArrayList<>();
         for (int i = 0; i < 20; i++) {
-            tasks.add(() -> accountService.deposit(account.id(), new AmountRequest(ONE)));
+            tasks.add(() -> accountService.deposit(userId, account.id(), new AmountRequest(ONE)));
         }
         for (Future<Object> f : runConcurrently(tasks)) {
             f.get();
@@ -111,7 +125,7 @@ class ConcurrencyIntegrationTest {
         for (int i = 0; i < 20; i++) {
             tasks.add(() -> {
                 try {
-                    accountService.withdraw(account.id(), new AmountRequest(BigDecimal.TEN));
+                    accountService.withdraw(userId, account.id(), new AmountRequest(BigDecimal.TEN));
                     return true;
                 } catch (InsufficientFundsException e) {
                     return false;
@@ -137,8 +151,8 @@ class ConcurrencyIntegrationTest {
 
         List<Callable<Object>> tasks = new ArrayList<>();
         for (int i = 0; i < 25; i++) {
-            tasks.add(() -> transferService.transfer(new TransferRequest(a.id(), b.id(), BigDecimal.TEN)));
-            tasks.add(() -> transferService.transfer(new TransferRequest(b.id(), a.id(), BigDecimal.TEN)));
+            tasks.add(() -> transferService.transfer(userId, new TransferRequest(a.id(), b.id(), BigDecimal.TEN)));
+            tasks.add(() -> transferService.transfer(userId, new TransferRequest(b.id(), a.id(), BigDecimal.TEN)));
         }
         for (Future<Object> f : runConcurrently(tasks)) {
             f.get();

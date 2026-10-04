@@ -26,9 +26,12 @@ public class TransferService {
         this.transactionRepository = transactionRepository;
     }
 
-    /** Gonderen hesaptaki TRANSFER_OUT kaydini dondurur. */
+    /**
+     * Gonderen hesaptaki TRANSFER_OUT kaydini dondurur. Gonderen hesap istegi yapan kullaniciya
+     * ait olmak zorundadir; alici hesap herhangi bir kullanicinin olabilir.
+     */
     @Transactional
-    public TransactionResponse transfer(TransferRequest request) {
+    public TransactionResponse transfer(Long userId, TransferRequest request) {
         Long fromId = request.fromAccountId();
         Long toId = request.toAccountId();
         if (fromId.equals(toId)) {
@@ -47,6 +50,10 @@ public class TransferService {
             from = lock(fromId);
         }
 
+        // Kilitler alindiktan sonra sahiplik kontrolu: baskasinin hesabi "bulunamadi" gibi davranir
+        if (!from.getUserId().equals(userId)) {
+            throw new AccountNotFoundException(fromId);
+        }
         if (from.getBalance().compareTo(request.amount()) < 0) {
             throw new InsufficientFundsException(fromId);
         }

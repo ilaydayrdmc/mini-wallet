@@ -69,9 +69,12 @@ class AuthFlowIntegrationTest {
         register("sahte.imza");
         String token = login("sahte.imza", PASSWORD);
 
-        // Imzanin son karakterini degistir
-        char last = token.charAt(token.length() - 1);
-        String tampered = token.substring(0, token.length() - 1) + (last == 'A' ? 'B' : 'A');
+        // Imzanin ILK karakterini degistir. Son karakteri degistirmek guvenilmez: Base64'te son
+        // karakterin son bitleri dolgudur, degisiklik imzanin degerini hic etkilemeyebilir.
+        String[] parts = token.split("\\.");
+        String signature = parts[2];
+        char first = signature.charAt(0);
+        String tampered = parts[0] + "." + parts[1] + "." + (first == 'A' ? 'B' : 'A') + signature.substring(1);
 
         mockMvc.perform(get("/api/accounts").header(HttpHeaders.AUTHORIZATION, "Bearer " + tampered))
                 .andExpect(status().isUnauthorized());

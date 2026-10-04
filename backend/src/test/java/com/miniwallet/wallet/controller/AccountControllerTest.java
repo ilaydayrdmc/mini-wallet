@@ -19,7 +19,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.webmvc.test.autoconfigure.WebMvcTest;
 import org.springframework.context.annotation.Import;
 import org.springframework.security.oauth2.jwt.JwtDecoder;
-import org.springframework.security.test.context.support.WithMockUser;
+import com.miniwallet.wallet.security.WithMockJwtUser;
 import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.web.PagedModel;
@@ -40,7 +40,7 @@ import com.miniwallet.wallet.service.AccountService;
 /** Sadece web katmani: HTTP kodlari, dogrulama ve hata govdeleri. Servis mock'tur. */
 @WebMvcTest(AccountController.class)
 @Import(SecurityConfig.class)
-@WithMockUser
+@WithMockJwtUser(userId = 7)
 class AccountControllerTest {
 
     @Autowired
@@ -61,7 +61,7 @@ class AccountControllerTest {
 
     @Test
     void createAccount_returns201WithBody() throws Exception {
-        when(accountService.create(any(CreateAccountRequest.class))).thenReturn(
+        when(accountService.create(eq(7L), any(CreateAccountRequest.class))).thenReturn(
                 new AccountResponse(1L, "Ayse", BigDecimal.ZERO, Instant.parse("2026-01-01T10:00:00Z")));
 
         mockMvc.perform(post("/api/accounts")
@@ -101,7 +101,7 @@ class AccountControllerTest {
 
     @Test
     void deposit_returns201WithTransaction() throws Exception {
-        when(accountService.deposit(eq(1L), any(AmountRequest.class)))
+        when(accountService.deposit(eq(7L), eq(1L), any(AmountRequest.class)))
                 .thenReturn(transaction(TransactionType.DEPOSIT, "100.50", "100.50"));
 
         mockMvc.perform(post("/api/accounts/1/deposit")
@@ -127,7 +127,7 @@ class AccountControllerTest {
 
     @Test
     void deposit_unknownAccount_returns404WithProblemDetail() throws Exception {
-        when(accountService.deposit(eq(99L), any(AmountRequest.class)))
+        when(accountService.deposit(eq(7L), eq(99L), any(AmountRequest.class)))
                 .thenThrow(new AccountNotFoundException(99L));
 
         mockMvc.perform(post("/api/accounts/99/deposit")
@@ -140,7 +140,7 @@ class AccountControllerTest {
 
     @Test
     void withdraw_insufficientFunds_returns422() throws Exception {
-        when(accountService.withdraw(eq(1L), any(AmountRequest.class)))
+        when(accountService.withdraw(eq(7L), eq(1L), any(AmountRequest.class)))
                 .thenThrow(new InsufficientFundsException(1L));
 
         mockMvc.perform(post("/api/accounts/1/withdraw")
@@ -155,7 +155,7 @@ class AccountControllerTest {
 
     @Test
     void transactions_usesDefaultPaging() throws Exception {
-        when(accountService.getTransactions(1L, 0, 20)).thenReturn(new PagedModel<>(new PageImpl<>(
+        when(accountService.getTransactions(7L, 1L, 0, 20)).thenReturn(new PagedModel<>(new PageImpl<>(
                 List.of(transaction(TransactionType.DEPOSIT, "5.00", "5.00")),
                 PageRequest.of(0, 20), 1)));
 
@@ -165,7 +165,7 @@ class AccountControllerTest {
                 .andExpect(jsonPath("$.page.totalElements").value(1))
                 .andExpect(jsonPath("$.page.size").value(20));
 
-        verify(accountService).getTransactions(1L, 0, 20);
+        verify(accountService).getTransactions(7L, 1L, 0, 20);
     }
 
     @Test
@@ -179,7 +179,7 @@ class AccountControllerTest {
 
     @Test
     void transactions_unknownAccount_returns404() throws Exception {
-        when(accountService.getTransactions(99L, 0, 20)).thenThrow(new AccountNotFoundException(99L));
+        when(accountService.getTransactions(7L, 99L, 0, 20)).thenThrow(new AccountNotFoundException(99L));
 
         mockMvc.perform(get("/api/accounts/99/transactions"))
                 .andExpect(status().isNotFound());

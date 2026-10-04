@@ -18,6 +18,10 @@ public class Account {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
+    // Hesabin sahibi olan kullanicinin id'si (users tablosuna yabanci anahtar)
+    @Column(name = "user_id", nullable = false, updatable = false)
+    private Long userId;
+
     @Column(nullable = false)
     private String ownerName;
 
@@ -31,7 +35,8 @@ public class Account {
         // JPA icin gerekli
     }
 
-    public Account(String ownerName) {
+    public Account(Long userId, String ownerName) {
+        this.userId = userId;
         this.ownerName = ownerName;
     }
 
@@ -44,6 +49,7 @@ public class Account {
     }
 
     public Long getId() { return id; }
+    public Long getUserId() { return userId; }
     public String getOwnerName() { return ownerName; }
     public BigDecimal getBalance() { return balance; }
     public Instant getCreatedAt() { return createdAt; }

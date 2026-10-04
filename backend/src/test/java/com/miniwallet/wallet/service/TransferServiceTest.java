@@ -46,14 +46,17 @@ class TransferServiceTest {
     @InjectMocks
     private TransferService transferService;
 
+    private static final Long USER_ID = 7L;
+    private static final Long OTHER_USER_ID = 8L;
+
     private Account sender;
     private Account receiver;
 
     @BeforeEach
     void setUp() {
-        sender = new Account("Ayse");
+        sender = new Account(USER_ID, "Ayse");
         sender.deposit(new BigDecimal("100.00"));
-        receiver = new Account("Mehmet");
+        receiver = new Account(OTHER_USER_ID, "Mehmet");
         receiver.deposit(new BigDecimal("20.00"));
     }
 
@@ -68,7 +71,7 @@ class TransferServiceTest {
         when(transactionRepository.save(any(Transaction.class)))
                 .thenAnswer(invocation -> invocation.getArgument(0));
 
-        TransactionResponse response = transferService.transfer(
+        TransactionResponse response = transferService.transfer(USER_ID, 
                 new TransferRequest(1L, 2L, new BigDecimal("30.00")));
 
         assertThat(sender.getBalance()).isEqualByComparingTo("70.00");
@@ -87,7 +90,7 @@ class TransferServiceTest {
 
     @Test
     void transfer_sameAccount_isRejectedWithoutTouchingDatabase() {
-        assertThatThrownBy(() -> transferService.transfer(
+        assertThatThrownBy(() -> transferService.transfer(USER_ID, 
                 new TransferRequest(1L, 1L, BigDecimal.TEN)))
                 .isInstanceOf(InvalidTransferException.class);
 
@@ -98,7 +101,7 @@ class TransferServiceTest {
     void transfer_insufficientBalance_throwsAndChangesNothing() {
         stubAccounts(1L, 2L);
 
-        assertThatThrownBy(() -> transferService.transfer(
+        assertThatThrownBy(() -> transferService.transfer(USER_ID, 
                 new TransferRequest(1L, 2L, new BigDecimal("100.01"))))
                 .isInstanceOf(InsufficientFundsException.class);
 
@@ -108,11 +111,38 @@ class TransferServiceTest {
     }
 
     @Test
+    void transfer_fromSomeoneElsesAccount_behavesLikeNotFoundAndChangesNothing() {
+        stubAccounts(1L, 2L);
+
+        // Hesap 1'in sahibi 7; istegi yapan 99
+        assertThatThrownBy(() -> transferService.transfer(99L,
+                new TransferRequest(1L, 2L, BigDecimal.TEN)))
+                .isInstanceOf(AccountNotFoundException.class);
+
+        assertThat(sender.getBalance()).isEqualByComparingTo("100.00");
+        assertThat(receiver.getBalance()).isEqualByComparingTo("20.00");
+        verify(transactionRepository, never()).save(any());
+    }
+
+    @Test
+    void transfer_toSomeoneElsesAccount_isAllowed() {
+        stubAccounts(1L, 2L);
+        when(transactionRepository.save(any(Transaction.class)))
+                .thenAnswer(invocation -> invocation.getArgument(0));
+
+        // Alici (kullanici 8) istegi yapan degil; baskasina para gondermek serbest
+        transferService.transfer(USER_ID, new TransferRequest(1L, 2L, new BigDecimal("30.00")));
+
+        assertThat(sender.getBalance()).isEqualByComparingTo("70.00");
+        assertThat(receiver.getBalance()).isEqualByComparingTo("50.00");
+    }
+
+    @Test
     void transfer_unknownReceiver_throwsNotFound() {
         when(accountRepository.findByIdForUpdate(1L)).thenReturn(Optional.of(sender));
         when(accountRepository.findByIdForUpdate(77L)).thenReturn(Optional.empty());
 
-        assertThatThrownBy(() -> transferService.transfer(
+        assertThatThrownBy(() -> transferService.transfer(USER_ID, 
                 new TransferRequest(1L, 77L, BigDecimal.ONE)))
                 .isInstanceOf(AccountNotFoundException.class);
 
@@ -125,7 +155,7 @@ class TransferServiceTest {
         when(transactionRepository.save(any(Transaction.class)))
                 .thenAnswer(invocation -> invocation.getArgument(0));
 
-        transferService.transfer(new TransferRequest(1L, 2L, BigDecimal.ONE));
+        transferService.transfer(USER_ID, new TransferRequest(1L, 2L, BigDecimal.ONE));
 
         InOrder order = inOrder(accountRepository);
         order.verify(accountRepository).findByIdForUpdate(1L);
@@ -138,7 +168,7 @@ class TransferServiceTest {
         when(transactionRepository.save(any(Transaction.class)))
                 .thenAnswer(invocation -> invocation.getArgument(0));
 
-        transferService.transfer(new TransferRequest(2L, 1L, BigDecimal.ONE));
+        transferService.transfer(USER_ID, new TransferRequest(2L, 1L, BigDecimal.ONE));
 
         // Gonderen 2 olsa bile once 1 numarali hesap kilitlenmeli (deadlock onleme)
         InOrder order = inOrder(accountRepository);
