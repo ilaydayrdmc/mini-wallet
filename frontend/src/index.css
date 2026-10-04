@@ -26,11 +26,13 @@ h2 {
 
 .row {
   display: flex;
+  flex-wrap: wrap; /* dar ekranda alanlar alt satira sarilir */
   gap: 0.5rem;
 }
 
 input {
-  flex: 1;
+  flex: 1 1 8rem;
+  min-width: 0;
   padding: 0.5rem 0.75rem;
   border: 1px solid #c8ccd6;
   border-radius: 6px;
@@ -97,7 +99,8 @@ button.secondary {
 }
 
 select {
-  flex: 1;
+  flex: 1 1 8rem;
+  min-width: 0;
   padding: 0.5rem 0.75rem;
   border: 1px solid #c8ccd6;
   border-radius: 6px;
@@ -137,4 +140,55 @@ tbody tr.static:hover {
   align-items: center;
   justify-content: space-between;
   margin-top: 0.75rem;
+}
+
+.topbar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.user {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+}
+
+.auth {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+  max-width: 360px;
+  margin: 1.5rem auto;
+}
+
+.auth label {
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+  font-size: 0.9rem;
+}
+
+.auth input {
+  flex: none;
+}
+
+.notice {
+  background: #fff4e6;
+  color: #d9480f;
+  border-radius: 6px;
+  padding: 0.5rem 0.75rem;
+  margin: 0;
+}
+
+.small {
+  font-size: 0.85rem;
+  margin: 0;
+}
+
+button.link {
+  background: none;
+  color: #3b5bdb;
+  padding: 0;
+  text-decoration: underline;
 }

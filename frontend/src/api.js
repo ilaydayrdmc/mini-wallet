@@ -1,17 +1,51 @@
 // Backend ile konusan tek yer. Bilesenler fetch'i dogrudan cagirmaz.
+import { getToken } from './auth'
 
-async function request(path, options = {}) {
+// Token gecersiz/suresi dolmus oldugunda (401) uygulamanin haberdar olmasi icin
+let onUnauthorized = () => {}
+
+export function setUnauthorizedHandler(handler) {
+  onUnauthorized = handler
+}
+
+// withAuth=false: giris/kayit istekleri token gondermez. Suresi dolmus bir token
+// gonderilirse backend, acik endpoint'lerde bile 401 doner.
+async function request(path, { withAuth = true, ...options } = {}) {
+  const token = withAuth ? getToken() : null
   const res = await fetch(path, {
-    headers: { 'Content-Type': 'application/json' },
     ...options,
+    headers: {
+      'Content-Type': 'application/json',
+      ...(token ? { Authorization: `Bearer ${token}` } : {}),
+    },
   })
 
   if (!res.ok) {
+    if (res.status === 401 && token) {
+      onUnauthorized()
+      throw new Error('Oturum suresi doldu, lutfen tekrar giris yapin')
+    }
     // Backend hatalari ProblemDetail olarak doner: { detail, status, ... }
     const body = await res.json().catch(() => null)
     throw new Error(body?.detail ?? `Istek basarisiz (HTTP ${res.status})`)
   }
   return res.json()
+}
+
+export function login(username, password) {
+  return request('/api/auth/login', {
+    method: 'POST',
+    body: JSON.stringify({ username, password }),
+    withAuth: false,
+  })
+}
+
+export function register(username, password) {
+  return request('/api/auth/register', {
+    method: 'POST',
+    body: JSON.stringify({ username, password }),
+    withAuth: false,
+  })
 }
 
 export function getAccounts() {
