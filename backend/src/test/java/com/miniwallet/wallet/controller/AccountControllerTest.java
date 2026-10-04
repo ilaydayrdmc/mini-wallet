@@ -17,6 +17,9 @@ import java.util.List;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.webmvc.test.autoconfigure.WebMvcTest;
+import org.springframework.context.annotation.Import;
+import org.springframework.security.oauth2.jwt.JwtDecoder;
+import org.springframework.security.test.context.support.WithMockUser;
 import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.web.PagedModel;
@@ -24,6 +27,7 @@ import org.springframework.http.MediaType;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.test.web.servlet.MockMvc;
 
+import com.miniwallet.wallet.config.SecurityConfig;
 import com.miniwallet.wallet.dto.AccountResponse;
 import com.miniwallet.wallet.dto.AmountRequest;
 import com.miniwallet.wallet.dto.CreateAccountRequest;
@@ -35,10 +39,15 @@ import com.miniwallet.wallet.service.AccountService;
 
 /** Sadece web katmani: HTTP kodlari, dogrulama ve hata govdeleri. Servis mock'tur. */
 @WebMvcTest(AccountController.class)
+@Import(SecurityConfig.class)
+@WithMockUser
 class AccountControllerTest {
 
     @Autowired
     private MockMvc mockMvc;
+
+    @MockitoBean
+    private JwtDecoder jwtDecoder;
 
     @MockitoBean
     private AccountService accountService;

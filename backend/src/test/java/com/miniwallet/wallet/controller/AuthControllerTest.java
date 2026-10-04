@@ -13,11 +13,14 @@ import java.util.List;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.webmvc.test.autoconfigure.WebMvcTest;
+import org.springframework.context.annotation.Import;
+import org.springframework.security.oauth2.jwt.JwtDecoder;
 import org.springframework.http.MediaType;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.ResultActions;
 
+import com.miniwallet.wallet.config.SecurityConfig;
 import com.miniwallet.wallet.dto.LoginRequest;
 import com.miniwallet.wallet.dto.RegisterRequest;
 import com.miniwallet.wallet.dto.TokenResponse;
@@ -27,10 +30,14 @@ import com.miniwallet.wallet.exception.UsernameTakenException;
 import com.miniwallet.wallet.service.AuthService;
 
 @WebMvcTest(AuthController.class)
+@Import(SecurityConfig.class)
 class AuthControllerTest {
 
     @Autowired
     private MockMvc mockMvc;
+
+    @MockitoBean
+    private JwtDecoder jwtDecoder;
 
     @MockitoBean
     private AuthService authService;

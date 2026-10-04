@@ -14,11 +14,15 @@ import java.util.List;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.webmvc.test.autoconfigure.WebMvcTest;
+import org.springframework.context.annotation.Import;
+import org.springframework.security.oauth2.jwt.JwtDecoder;
+import org.springframework.security.test.context.support.WithMockUser;
 import org.springframework.http.MediaType;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.ResultActions;
 
+import com.miniwallet.wallet.config.SecurityConfig;
 import com.miniwallet.wallet.dto.TransactionResponse;
 import com.miniwallet.wallet.dto.TransferRequest;
 import com.miniwallet.wallet.entity.TransactionType;
@@ -28,12 +32,17 @@ import com.miniwallet.wallet.exception.InvalidTransferException;
 import com.miniwallet.wallet.service.TransferService;
 
 @WebMvcTest(TransferController.class)
+@Import(SecurityConfig.class)
+@WithMockUser
 class TransferControllerTest {
 
     private static final String VALID_BODY = "{\"fromAccountId\":1,\"toAccountId\":2,\"amount\":25}";
 
     @Autowired
     private MockMvc mockMvc;
+
+    @MockitoBean
+    private JwtDecoder jwtDecoder;
 
     @MockitoBean
     private TransferService transferService;
