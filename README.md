@@ -77,6 +77,7 @@ cd backend
 
 Testler çalışırken **Docker çalışıyor olmalıdır**: entegrasyon testleri [Testcontainers](https://testcontainers.com/) ile geçici bir PostgreSQL container'ı başlatır, ayrıca veritabanı kurmak gerekmez.
 
+- `AccountControllerTest` ve `TransferControllerTest`: `@WebMvcTest` ile yalnızca web katmanı testleri (HTTP durum kodları, giriş doğrulama, hata gövdeleri, sayfalama parametreleri). Servis katmanı mock olarak verilir.
 - `AccountServiceTest` ve `TransferServiceTest`: Mockito ile servis katmanı birim testleri (yatırma, çekme, transfer, yetersiz bakiye, olmayan hesap, kilit sırası).
 - `ConcurrencyIntegrationTest`: gerçek PostgreSQL üzerinde eşzamanlılık testleri. Aynı hesaba eşzamanlı yatırmada güncelleme kaybolmaz, eşzamanlı çekmeler bakiyeyi eksiye düşüremez, karşılıklı transferler (A→B ve B→A) deadlock yapmaz ve toplam para korunur. Satır kilidi (`FOR UPDATE`) kaldırıldığında bu üç test kırılır.
 - `WalletApplicationTests`: uygulama bağlamının yüklendiğini doğrular. Flyway migration'ları boş bir veritabanına uygulanır ve Hibernate şema doğrulaması geçer.
