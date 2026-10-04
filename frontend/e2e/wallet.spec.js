@@ -203,10 +203,22 @@ test.describe('gorunum', () => {
   for (const width of [900, 375]) {
     test(`${width}px genislikte yatay tasma yok`, async ({ page }) => {
       await page.setViewportSize({ width, height: 900 })
-      await uiSignUp(page, uniqueName('gorunum'))
+      // En uzun kullanici adi (30 karakter): ust cubuk en dar duruma zorlanir. Yazi tipleri
+      // isletim sistemine gore degistigi icin kisa adla Windows'ta gorunmeyen tasma Linux'ta cikabilir.
+      const longName = uniqueName('gorunum').padEnd(30, 'x').slice(0, 30)
+      await uiSignUp(page, longName)
       const row = await uiCreateAccount(page, 'Birikim')
       await row.click()
       await page.locator('form select').selectOption('other') // en genis transfer satiri
+
+      // Tasan ogeleri listeler: hata mesajinda hangi eleman oldugu gorunur
+      const offenders = await page.evaluate(() => {
+        const limit = document.documentElement.clientWidth + 0.5
+        return [...document.querySelectorAll('body *')]
+          .filter((el) => el.getBoundingClientRect().right > limit)
+          .map((el) => `${el.tagName.toLowerCase()}.${el.className} (sag kenar ${Math.round(el.getBoundingClientRect().right)}px)`)
+      })
+      expect(offenders).toEqual([])
       const overflows = await page.evaluate(
         () => document.documentElement.scrollWidth > document.documentElement.clientWidth,
       )

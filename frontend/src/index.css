@@ -144,14 +144,22 @@ tbody tr.static:hover {
 
 .topbar {
   display: flex;
+  flex-wrap: wrap; /* dar ekranda kullanici alani basligin altina iner */
   align-items: center;
   justify-content: space-between;
+  gap: 0.25rem 1rem;
 }
 
 .user {
   display: flex;
   align-items: center;
   gap: 0.75rem;
+  min-width: 0;
+}
+
+.user span {
+  min-width: 0;
+  overflow-wrap: anywhere; /* uzun kullanici adi satira sigmazsa bolunur */
 }
 
 .auth {
