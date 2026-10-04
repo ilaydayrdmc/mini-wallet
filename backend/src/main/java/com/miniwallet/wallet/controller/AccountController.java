@@ -4,6 +4,7 @@ import java.util.List;
 
 import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -12,6 +13,8 @@ import org.springframework.web.bind.annotation.RestController;
 
 import com.miniwallet.wallet.dto.AccountResponse;
 import com.miniwallet.wallet.dto.CreateAccountRequest;
+import com.miniwallet.wallet.dto.DepositRequest;
+import com.miniwallet.wallet.dto.TransactionResponse;
 import com.miniwallet.wallet.service.AccountService;
 
 import jakarta.validation.Valid;
@@ -35,5 +38,12 @@ public class AccountController {
     @GetMapping
     public List<AccountResponse> findAll() {
         return accountService.findAll();
+    }
+
+    @PostMapping("/{id}/deposit")
+    @ResponseStatus(HttpStatus.CREATED)
+    public TransactionResponse deposit(@PathVariable Long id,
+            @Valid @RequestBody DepositRequest request) {
+        return accountService.deposit(id, request);
     }
 }

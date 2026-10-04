@@ -35,6 +35,10 @@ public class Account {
         this.ownerName = ownerName;
     }
 
+    public void deposit(BigDecimal amount) {
+        this.balance = this.balance.add(amount);
+    }
+
     public Long getId() { return id; }
     public String getOwnerName() { return ownerName; }
     public BigDecimal getBalance() { return balance; }
