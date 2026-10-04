@@ -4,3 +4,75 @@ body {
   background: #f5f6fa;
   color: #1f2430;
 }
+
+.container {
+  max-width: 640px;
+  margin: 2rem auto;
+  padding: 0 1rem;
+}
+
+.card {
+  background: #fff;
+  border-radius: 8px;
+  padding: 1rem 1.25rem;
+  margin-bottom: 1rem;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.08);
+}
+
+h2 {
+  margin: 0 0 0.75rem;
+  font-size: 1.1rem;
+}
+
+.row {
+  display: flex;
+  gap: 0.5rem;
+}
+
+input {
+  flex: 1;
+  padding: 0.5rem 0.75rem;
+  border: 1px solid #c8ccd6;
+  border-radius: 6px;
+  font-size: 1rem;
+}
+
+button {
+  padding: 0.5rem 1rem;
+  border: 0;
+  border-radius: 6px;
+  background: #3b5bdb;
+  color: #fff;
+  font-size: 1rem;
+  cursor: pointer;
+}
+
+button:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+table {
+  width: 100%;
+  border-collapse: collapse;
+}
+
+th,
+td {
+  text-align: left;
+  padding: 0.5rem 0.25rem;
+  border-bottom: 1px solid #eceef3;
+}
+
+.num {
+  text-align: right;
+}
+
+.muted {
+  color: #6b7280;
+}
+
+.error {
+  color: #c92a2a;
+  margin: 0.5rem 0 0;
+}

@@ -1,22 +1,44 @@
 import { useEffect, useState } from 'react'
+import { getAccounts } from './api'
+import AccountList from './components/AccountList'
+import CreateAccountForm from './components/CreateAccountForm'
 
 function App() {
-  const [message, setMessage] = useState('Yukleniyor...')
+  const [accounts, setAccounts] = useState([])
+  const [loading, setLoading] = useState(true)
+  const [error, setError] = useState(null)
+  // Bu sayac artinca liste yeniden yuklenir (ornegin hesap acildiktan sonra)
+  const [reloadKey, setReloadKey] = useState(0)
 
   useEffect(() => {
-    fetch('/api/hello')
-      .then((res) => {
-        if (!res.ok) throw new Error(`HTTP ${res.status}`)
-        return res.json()
+    let cancelled = false
+    getAccounts()
+      .then((data) => {
+        if (cancelled) return
+        setAccounts(data)
+        setError(null)
       })
-      .then((data) => setMessage(data.message))
-      .catch((err) => setMessage(`Backend'e ulasilamadi: ${err.message}`))
-  }, [])
+      .catch((err) => {
+        if (!cancelled) setError(`Hesaplar yuklenemedi: ${err.message}`)
+      })
+      .finally(() => {
+        if (!cancelled) setLoading(false)
+      })
+    return () => {
+      cancelled = true
+    }
+  }, [reloadKey])
 
   return (
-    <main style={{ maxWidth: 600, margin: '4rem auto', padding: '0 1rem' }}>
+    <main className="container">
       <h1>Mini Wallet</h1>
-      <p>{message}</p>
+      <CreateAccountForm onCreated={() => setReloadKey((k) => k + 1)} />
+      <section className="card">
+        <h2>Hesaplar</h2>
+        {loading && <p className="muted">Yukleniyor...</p>}
+        {error && <p className="error">{error}</p>}
+        {!loading && !error && <AccountList accounts={accounts} />}
+      </section>
     </main>
   )
 }
