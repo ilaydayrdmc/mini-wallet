@@ -13,7 +13,7 @@ import org.springframework.web.bind.annotation.RestController;
 
 import com.miniwallet.wallet.dto.AccountResponse;
 import com.miniwallet.wallet.dto.CreateAccountRequest;
-import com.miniwallet.wallet.dto.DepositRequest;
+import com.miniwallet.wallet.dto.AmountRequest;
 import com.miniwallet.wallet.dto.TransactionResponse;
 import com.miniwallet.wallet.service.AccountService;
 
@@ -43,7 +43,14 @@ public class AccountController {
     @PostMapping("/{id}/deposit")
     @ResponseStatus(HttpStatus.CREATED)
     public TransactionResponse deposit(@PathVariable Long id,
-            @Valid @RequestBody DepositRequest request) {
+            @Valid @RequestBody AmountRequest request) {
         return accountService.deposit(id, request);
+    }
+
+    @PostMapping("/{id}/withdraw")
+    @ResponseStatus(HttpStatus.CREATED)
+    public TransactionResponse withdraw(@PathVariable Long id,
+            @Valid @RequestBody AmountRequest request) {
+        return accountService.withdraw(id, request);
     }
 }

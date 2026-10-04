@@ -39,6 +39,10 @@ public class Account {
         this.balance = this.balance.add(amount);
     }
 
+    public void withdraw(BigDecimal amount) {
+        this.balance = this.balance.subtract(amount);
+    }
+
     public Long getId() { return id; }
     public String getOwnerName() { return ownerName; }
     public BigDecimal getBalance() { return balance; }
