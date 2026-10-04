@@ -7,7 +7,7 @@ export default defineConfig({
   timeout: 30_000,
   expect: { timeout: 7_000 },
   workers: process.env.CI ? 1 : undefined,
-  reporter: process.env.CI ? [['list'], ['html', { open: 'never' }]] : 'list',
+  reporter: process.env.CI ? [['github'], ['list'], ['html', { open: 'never' }]] : 'list',
   use: {
     baseURL: process.env.E2E_BASE_URL ?? 'http://localhost:3000',
     // Yerelde kurulu Chrome kullanilir; CI'da Playwright'in kendi Chromium'u indirilir
